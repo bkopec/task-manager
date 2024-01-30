@@ -3,10 +3,12 @@ import axios from 'axios'
 import { useEffect } from 'react';
 import config from '../config.js'
 import Task from './Task.js'
+import Cookies from 'universal-cookie';
+import loadingImage from '../assets/loading.webp';
 
 const backendUrl = config.backendUrl;
 
-function TaskList({user, tasks, setTasks}) {
+function TaskList({user, setUser, tasks, setTasks}) {
 
     useEffect(() => {
       axios 
@@ -21,8 +23,12 @@ function TaskList({user, tasks, setTasks}) {
       })
       .catch(error => {
         console.log(error);
-        if (error.response.status == 401)
-          return;
+        if (error.response.status == 401) {
+          setUser({});
+          const cookies = new Cookies();
+          cookies.remove("jwt-token");
+          cookies.remove("login");
+        }
       });
     }, []);
 
@@ -35,38 +41,36 @@ function TaskList({user, tasks, setTasks}) {
         })
         .catch(error => {
           console.log(error);
-          if (error.response.status == 401)
+          if (error.response && error.response.status == 401)
             return;
         });
-        console.log(id);
     };
 
-    const handleEdit = (id, content) => {
-        axios 
-        .put(backendUrl + '/api/tasks/' + id, {content: content}, { headers:{'Authorization': `Bearer ${user.token}` } })
-        .then(response => {
-            setTasks(tasks.map((task) => task.id == id ? {...task, content:content} : task));
-            console.log("success");
-            return(true);
-        })
-        .catch(error => {
-            console.log(error);
-            if (error.response.status == 401)
-            return(false);
-        });
-        console.log(id);
-        return(false);
-    }
-
-    const handleEditing = (id) => {
-        setTasks(tasks.map((task) => task.id == id ? {...task, editing:true} : task));
+    const handleCompleted = (id) => {
+      axios 
+      .put(backendUrl + '/api/tasks/' + id, {id}, { headers:{'Authorization': `Bearer ${user.token}` } })
+      .then(response => {
+          console.log(tasks);
+          console.log("setting tasks ?");
+          setTasks(tasks.map((task) => task.id === id ? {...task, completed: !task.completed} : task));
+          console.log("success");
+      })
+      .catch(error => {
+        console.log(error);
+        if (error.response && error.response.status == 401)
+          return;
+      });
     }
 
     console.log(tasks);
     return(
       <div id="taskList">
-        <h1>Task list :</h1>
-        {tasks.map((task) => <Task key={task.id} task={task} onDelete={handleDelete} onEdit={handleEdit}  />)}
+         {tasks && tasks.length == 0 && 
+        <p className="emptyTaskList">No tasks yet</p>}
+        {tasks && tasks.length > 0 &&
+        tasks.map((task) => <Task key={task.id} task={task} onDelete={handleDelete} onCompleted={handleCompleted} />)}
+        {!tasks &&
+        <img className="loading fade-in" src={loadingImage} />}
       </div>
     );
   }

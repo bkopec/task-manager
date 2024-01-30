@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import axios from 'axios'
 import config from '../config.js'
+import Cookies from 'universal-cookie';
 
 const backendUrl = config.backendUrl;
 
@@ -31,18 +32,19 @@ function AuthPage({user, setUser}) {
         setUser({token: response.data.token, login: response.data.login});
         const cookies = new Cookies();
         cookies.set("jwt-token", response.data.token);
-        console.log(response);
+        cookies.set("login", response.data.login);
       })
       .catch(error => {
-        if (error.response.status == 401) {
+        if (error.response && error.response.status == 401) {
           const data = error.response.data;
           if (data.error == "INVALID_PASSWORD") {
             setErrors({...errors, passwordInvalid:true});
             }
-        }
-      });
-      };
-    console.log(errors);
+        else
+          console.log(error);
+      }});
+    };
+
     return (
       <div>
         <h1>Login and register</h1>

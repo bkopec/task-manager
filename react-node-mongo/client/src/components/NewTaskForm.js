@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios'
 import config from '../config.js'
 
@@ -6,14 +6,24 @@ const backendUrl = config.backendUrl;
 
 function NewTaskForm({user, tasks, setTasks}) {
     const [newTask, setNewTask] = useState('')
-  
+    const elementRef = useRef(null);
+
+
+    useEffect(() => {
+      console.log('Component rendered');
+    }, []);
+
+
     const handleInputChange = (event, setter) =>  {
-      setter(event.target.value);
+      setter(event.target.innerText);
     };
   
     const handleSubmit = (event) => {
       event.preventDefault();
   
+      if (newTask.length == 0)
+        return;
+
       const postData = {};
       postData.content = newTask;
   
@@ -22,10 +32,11 @@ function NewTaskForm({user, tasks, setTasks}) {
       .then(response => {
         console.log(response)
         setTasks([...tasks, {login:user.login, id:response.data.id, content:postData.content}]);
+        elementRef.current.innerHTML = '';
         setNewTask('');
       })
       .catch(error => {
-        if (error.response.status == 500) {
+        if (error.response && error.response.status == 500) {
           const data = error.response.data;
         }
       });
@@ -33,9 +44,8 @@ function NewTaskForm({user, tasks, setTasks}) {
   
     return (
     <form id="newTask">
-      <h1>New task :</h1>
-    <textarea type="textarea" cols="50" rows="4" value={newTask} onChange={(e) => handleInputChange(e, setNewTask)} />
-    <button label="Task" onClick={handleSubmit} type="submit">Submit</button>
+    <div ref={elementRef} className="textarea" contentEditable="true" onInput={(e) => handleInputChange(e, setNewTask)}></div>
+    <button label="Task" onClick={handleSubmit} type="submit">ADD</button>
     </form>
     );
   }

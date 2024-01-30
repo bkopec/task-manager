@@ -75,10 +75,6 @@ tasksRouter.delete('/:taskId', async (request, response) => {
   
   
 tasksRouter.put('/:taskId', async (request, response) => {
-  
-    const taskId = request.params.taskId;
-  
-
 
     const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
     if (!decodedToken.id)
@@ -88,11 +84,11 @@ tasksRouter.put('/:taskId', async (request, response) => {
     if (!user)
       return response.status(401).json({ error: 'token invalid or user deleted' })
 
-    const task = await Task.findById(taskId)
+    const task = await Task.findById(request.body.id)
     if (!task || (task.login != user.login))
       return response.status(404).json({ error: 'task not found' })
 
-     task.content = request.body.content;
+     task.completed = !task.completed;
      task.save().then(result => {
       response.send();
     })

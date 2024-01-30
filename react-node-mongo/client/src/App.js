@@ -27,7 +27,7 @@ function App() {
   const cookies = new Cookies();
 
   if (!user.hasOwnProperty('token') && cookies.get('jwt-token') != undefined)
-    user.token = cookies.get('jwt-token');
+    setUser({token: cookies.get('jwt-token'), login: cookies.get('login')});
 
   return (
     <Router>
