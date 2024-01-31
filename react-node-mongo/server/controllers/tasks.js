@@ -1,8 +1,14 @@
 const tasksRouter = require('express').Router()
-const Task = require('../models/task')
-const User = require('../models/user')
 
 const jwt = require('jsonwebtoken')
+
+const config = require('../utils/config')
+
+let Database;
+if (config.DATABASE_ENGINE == "MYSQL")
+  Database = require('../database/mysql_database');
+else if (config.DATABASE_ENGINE == "MONGODB")
+  Database = require('../database/mongodb_database');
 
 const getTokenFrom = request => {
   const authorization = request.get('authorization')
@@ -18,11 +24,11 @@ tasksRouter.get('/', async (request, response) => {
     if (!decodedToken.id)
       return response.status(401).json({ error: 'token invalid' })
   
-    const user = await User.findById(decodedToken.id)
+    const user = await Database.findUserById(decodedToken.id)
     if (!user)
-      return response.status(401).json({ error: 'token invalid or user deleted' })
+      return response.status(401).json({ error: 'token invalid or user deleted' });
   
-    const tasks = await Task.find( {login : user.login});
+    const tasks = await Database.findTasksByLogin(user.login);
   
     response.send({...tasks});
 })
@@ -34,18 +40,19 @@ tasksRouter.post('/', async (request, response) => {
       return response.status(401).json({ error: 'token invalid' })
     }
   
-    const user = await User.findById(decodedToken.id)
+    const user = await Database.findUserById(decodedToken.id)
     if (!user) {
       return response.status(401).json({ error: 'token invalid or user deleted' })
     }
-    const newTask = new Task({
-      ...request.body,
-      login: user.login
+
+    Database.createTask({...request.body, login: user.login})
+    .then(result => {
+      return response.status(200).send({id : result});
     })
-  
-    newTask.save().then(result => {
-      response.send({id : newTask._id});
-    })
+    .catch(error => {
+      console.error('Error saving task:', error);
+      return response.status(500).json({ error: 'Internal Server Error', detailedError: error.message });
+    });
 })
   
 tasksRouter.delete('/:taskId', async (request, response) => {
@@ -56,17 +63,13 @@ tasksRouter.delete('/:taskId', async (request, response) => {
     if (!decodedToken.id)
       return response.status(401).json({ error: 'token invalid' })
   
-    const user = await User.findById(decodedToken.id)
+    const user = await Database.findUserById(decodedToken.id)
     if (!user)
       return response.status(401).json({ error: 'token invalid or user deleted' })
 
-      Task.deleteOne({ _id: taskId })
+      Database.deleteTaskById(taskId)
   .then(result => {
-    if (result.deletedCount === 1) {
       return response.status(204).end();
-    } else {
-      return response.status(404).json({ error: 'task not found' })
-    }
   })
   .catch(error => {
     return response.status(500).json({ error: 'Internal Server Error', detailedError: error.message })
@@ -80,18 +83,18 @@ tasksRouter.put('/:taskId', async (request, response) => {
     if (!decodedToken.id)
       return response.status(401).json({ error: 'token invalid' })
   
-    const user = await User.findById(decodedToken.id)
+    const user = await Database.findUserById(decodedToken.id)
     if (!user)
       return response.status(401).json({ error: 'token invalid or user deleted' })
 
-    const task = await Task.findById(request.body.id)
-    if (!task || (task.login != user.login))
-      return response.status(404).json({ error: 'task not found' })
-
-     task.completed = !task.completed;
-     task.save().then(result => {
+    Database.updateTaskCompletion(request.body.id)
+    .then(result => {
       response.send();
     })
+    .catch(error => {
+      console.error('Error updating task:', error);
+      return response.status(500).json({ error: 'Internal Server Error', detailedError: error.message });
+    });
 })
 
 module.exports = tasksRouter

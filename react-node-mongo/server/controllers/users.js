@@ -4,22 +4,29 @@ const User = require('../models/user')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
+const config = require('../utils/config')
+
+let Database;
+if (config.DATABASE_ENGINE == "MYSQL")
+  Database = require('../database/mysql_database');
+else if (config.DATABASE_ENGINE == "MONGODB")
+  Database = require('../database/mongodb_database');
+
 function generateToken(userForToken) {
     return jwt.sign(userForToken, process.env.SECRET);
 }
 
 usersRouter.post('/', async (request, response) => {
-    const newUser = new User({
-      ...request.body
-    })
   
-    if (newUser.password.length < 4)
+    if (request.body.password.length < 4)
       return(response.status(500).json({ error: 'Internal Server Error', detailedError: "Forged request or old client" }));
   
-    const user = await User.findOne({ login: newUser.login });
+    const user = await Database.findUserByLogin(request.body.login);
   
+    console.log(user);
+
     if (user) {
-      const passwordCorrect = await bcrypt.compare(newUser.password, user.password);
+      const passwordCorrect = await bcrypt.compare(request.body.password, user.password);
   
       if (!passwordCorrect) {
         return response.status(401).json({
@@ -32,23 +39,25 @@ usersRouter.post('/', async (request, response) => {
       }
     }
   
+    // user doesn't exist, create the user
     const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(newUser.password, saltRounds);
-    newUser.password = passwordHash;
-  
-    newUser.save().then(async result => {
+    const passwordHash = await bcrypt.hash(request.body.password, saltRounds);
+
+    Database.createUser({login : request.body.login, password : passwordHash}).then(async result => {
       const userForToken = {
-        login: newUser.login,
-        id: newUser._id,
-      }     
+        login: request.body.login,
+        id: result
+      }
+      console.log("db id : " + result)
       const token = jwt.sign(userForToken, process.env.SECRET)
     
-      response.status(200).send({token, login: newUser.login});
+      response.status(200).send({token, login: request.body.login});
     }).catch(error => {
       console.error('Error saving account:', error);
   
       response.status(500).json({ error: 'Internal Server Error', detailedError: error.message });
     });
+
   })
 
 module.exports = usersRouter

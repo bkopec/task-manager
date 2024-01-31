@@ -1,6 +1,5 @@
 
 const express = require('express')
-const mongoose = require('mongoose')
 require('dotenv').config()
 
 const cors = require('cors')
@@ -10,6 +9,13 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+let Database;
+if (config.DATABASE_ENGINE == "MYSQL")
+  Database = require('./database/mysql_database');
+else if (config.DATABASE_ENGINE == "MONGODB")
+  Database = require('./database/mongodb_database');
+Database.init();
+
 const middleware = require('./utils/middleware')
 
 const tasksRouter = require('./controllers/tasks')
@@ -17,20 +23,6 @@ const usersRouter = require('./controllers/users')
 
 app.use('/api/tasks', tasksRouter)
 app.use('/api/users', usersRouter)
-
-const url = config.DB_URL;
-
-mongoose.set('strictQuery',false)
-mongoose.connect(url)
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((error) => {
-    console.error('Error connecting to MongoDB:', error.message);
-  });
-
-const User = require('./models/user')
-const Task = require('./models/task')
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
