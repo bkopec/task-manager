@@ -13,6 +13,8 @@ else if (config.DATABASE_ENGINE == "MONGODB")
   Database = require('../database/mongodb_database');
 else if (config.DATABASE_ENGINE == "PGSQL")
   Database = require('../database/pgsql_database');
+else if (config.DATABASE_ENGINE == "MSSQL")
+  Database = require('../database/mssql_database');
 
 
 function generateToken(userForToken) {
@@ -25,8 +27,6 @@ usersRouter.post('/', async (request, response) => {
       return(response.status(500).json({ error: 'Internal Server Error', detailedError: "Forged request or old client" }));
   
     const user = await Database.findUserByLogin(request.body.login);
-  
-    console.log(user);
 
     if (user) {
       const passwordCorrect = await bcrypt.compare(request.body.password, user.password);
@@ -51,7 +51,6 @@ usersRouter.post('/', async (request, response) => {
         login: request.body.login,
         id: result
       }
-      console.log("db id : " + result)
       const token = jwt.sign(userForToken, process.env.SECRET)
     
       response.status(200).send({token, login: request.body.login});

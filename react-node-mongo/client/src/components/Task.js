@@ -11,6 +11,8 @@ function Task({task, onDelete, onCompleted}) {
       };
 
     const handleDelete = () => {
+        // mutating state directly to handle rapid deletion
+        task.deleting = true;
         setIsDeleted(true);
         setTimeout(() => {
             onDelete(task.id);

@@ -11,6 +11,8 @@ else if (config.DATABASE_ENGINE == "MONGODB")
   Database = require('../database/mongodb_database');
 else if (config.DATABASE_ENGINE == "PGSQL")
   Database = require('../database/pgsql_database');
+else if (config.DATABASE_ENGINE == "MSSQL")
+  Database = require('../database/mssql_database');
 
 
 const getTokenFrom = request => {
@@ -28,9 +30,10 @@ tasksRouter.get('/', async (request, response) => {
       return response.status(401).json({ error: 'token invalid' })
   
     const user = await Database.findUserById(decodedToken.id)
-    if (!user)
+    if (!user) {
       return response.status(401).json({ error: 'token invalid or user deleted' });
-  
+    }
+     
     const tasks = await Database.findTasksByLogin(user.login);
   
     response.send({...tasks});
@@ -42,7 +45,6 @@ tasksRouter.post('/', async (request, response) => {
     if (!decodedToken.id) {
       return response.status(401).json({ error: 'token invalid' })
     }
-  
     const user = await Database.findUserById(decodedToken.id)
     if (!user) {
       return response.status(401).json({ error: 'token invalid or user deleted' })

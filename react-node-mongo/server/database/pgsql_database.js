@@ -110,7 +110,6 @@ class Database {
 
       const connection = await this.pool.connect();
 
-      console.log(user.login + " " + user.password);
       const result = await connection.query(
         'INSERT INTO users (login, password) VALUES ($1, $2) RETURNING dbid',
         [user.login, user.password]
@@ -173,12 +172,6 @@ class Database {
 
   static async init() {
     const config = require('../utils/config');
-
-    console.log(config.PG_USER);
-    console.log(config.PG_PASSWORD);
-
-
-
 
 try {
 

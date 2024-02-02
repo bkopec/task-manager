@@ -36,8 +36,7 @@ function TaskList({user, setUser, tasks, setTasks}) {
         axios 
         .delete(backendUrl + '/api/tasks/' + id, { headers:{'Authorization': `Bearer ${user.token}` } })
         .then(response => {
-            setTasks(tasks.filter((task) => task.id != id));
-            console.log("success");
+            setTasks(tasks.filter((task) => task.id != id && task.deleting == undefined));
         })
         .catch(error => {
           console.log(error);
@@ -50,10 +49,7 @@ function TaskList({user, setUser, tasks, setTasks}) {
       axios 
       .put(backendUrl + '/api/tasks/' + id, {id}, { headers:{'Authorization': `Bearer ${user.token}` } })
       .then(response => {
-          console.log(tasks);
-          console.log("setting tasks ?");
           setTasks(tasks.map((task) => task.id === id ? {...task, completed: !task.completed} : task));
-          console.log("success");
       })
       .catch(error => {
         console.log(error);

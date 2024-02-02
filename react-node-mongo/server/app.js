@@ -16,6 +16,8 @@ else if (config.DATABASE_ENGINE == "MONGODB")
   Database = require('./database/mongodb_database');
 else if (config.DATABASE_ENGINE == "PGSQL")
   Database = require('./database/pgsql_database');
+else if (config.DATABASE_ENGINE == "MSSQL")
+  Database = require('./database/mssql_database');
 Database.init();
 
 const middleware = require('./utils/middleware')
