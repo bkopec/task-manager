@@ -35,7 +35,6 @@ tasksRouter.get('/', async (request, response) => {
     }
      
     const tasks = await Database.findTasksByLogin(user.login);
-  
     response.send({...tasks});
 })
   

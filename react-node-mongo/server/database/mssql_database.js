@@ -161,7 +161,7 @@ class Database {
     const config = require('../utils/config');
 
     try {
-    const connectionString = `Server=${config.MSSQL_HOST},${config.MSSQL_PORT};Database=master;User Id=${config.MSSQL_USER};Password=${config.MSSQL_PASSWORD};TrustServerCertificate=True;`;
+    let connectionString = `Server=${config.MSSQL_HOST},${config.MSSQL_PORT};Database=master;User Id=${config.MSSQL_USER};Password=${config.MSSQL_PASSWORD};TrustServerCertificate=True;`;
 
     this.pool = new sql.ConnectionPool(connectionString);
 
@@ -171,7 +171,6 @@ class Database {
     .query(`IF DB_ID(\'${config.MSSQL_DATABASE}\') IS NULL SELECT 0 AS DatabaseExists ELSE SELECT 1 AS DatabaseExists`);
 
     const databaseExists = checkDatabaseResult.recordset[0].DatabaseExists;
-      console.log(databaseExists)
 
     if (databaseExists === 0) {
       await this.pool.request()
@@ -180,8 +179,11 @@ class Database {
       console.log(`Database ${config.MSSQL_DATABASE} created.`);
     }
 
-    await this.pool.request()
-    .query(`USE ${config.MSSQL_DATABASE};`);
+    this.pool.close();
+
+    connectionString = `Server=${config.MSSQL_HOST},${config.MSSQL_PORT};Database=task_manager;User Id=${config.MSSQL_USER};Password=${config.MSSQL_PASSWORD};TrustServerCertificate=True;`;
+    this.pool = new sql.ConnectionPool(connectionString);
+    await this.pool.connect();
 
     console.log(`Using ${config.MSSQL_DATABASE} as current db.`)
 

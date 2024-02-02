@@ -26,14 +26,17 @@ module.exports = {
     DATABASE_ENGINE,
     DB_URL,
     PORT,
+
     MYSQL_HOST,
     MYSQL_USER,
     MYSQL_PASSWORD,
     MYSQL_DATABASE,
+
     PG_HOST,
     PG_USER,
     PG_PASSWORD,
     PG_DATABASE,
+    
     MSSQL_HOST,
     MSSQL_USER,
     MSSQL_PASSWORD,

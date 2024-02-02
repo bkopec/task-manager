@@ -12,7 +12,7 @@ function TaskList({user, setUser, tasks, setTasks}) {
 
     useEffect(() => {
       axios 
-      .get(backendUrl + '/api/tasks', { headers:{'Authorization': `Bearer ${user.token}` } })
+      .get(backendUrl + '/api/tasks', { headers:{'Authorization': `Bearer ${user.token}`, 'Cache-Control': 'no-cache' } })
       .then(response => {
         let fetchedTasks = [];
         
