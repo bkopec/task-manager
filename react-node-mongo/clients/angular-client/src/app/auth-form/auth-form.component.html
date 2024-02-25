@@ -1,0 +1,12 @@
+<app-header></app-header>
+<div class="authFormComponent">
+    <h2>Log in and register</h2>
+    <form class="signupForm">
+        <input [class.inError]="errors.passwordInvalid" placeholder="Username" (input)="handleInputChange($event)" name="login" />
+        <input [class.inError]="errors.passwordInvalid || errors.passwordTooShort" placeholder="Password" (input)="handleInputChange($event)" type='password' name="password" />
+        <button (click)="handleSubmit($event)" type="submit">Submit</button>
+    </form>
+    <p class="error" *ngIf="errors.passwordTooShort">Password needs at least four characters</p>
+    <p class="error" *ngIf="errors.passwordInvalid">This username is already in use, or you input the wrong password.</p>
+  </div>
+

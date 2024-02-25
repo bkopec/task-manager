@@ -1,0 +1,13 @@
+<!-- task-list.component.html -->
+
+<div id="taskList">
+    <ng-container *ngIf="tasks$ | async as tasks; else loadingSection">
+        <p class="emptyTaskList" *ngIf="tasks.length === 0">
+            No tasks yet
+        </p>
+        <app-task *ngFor="let task of tasks" [task]="task" (deleted)="handleDelete(task.id)" (completed)="handleCompleted(task.id)"></app-task>
+    </ng-container>
+    <ng-template #loadingSection>
+        <img class="loading fade-in" src="assets/loading.webp" />
+    </ng-template>
+</div>

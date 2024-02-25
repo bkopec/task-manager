@@ -11,6 +11,12 @@ import {
   createSearchParams, useNavigate, useLocation
 } from 'react-router-dom'
 
+//axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
+//axios.defaults.headers.get['Access-Control-Allow-Origin'] = '*';
+
+//axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
+
+
 const backendUrl = "http://localhost:3001";
 
 import HomePage from './pages/HomePage';

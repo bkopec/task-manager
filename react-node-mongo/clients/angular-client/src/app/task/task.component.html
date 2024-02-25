@@ -1,0 +1,5 @@
+<div [class.invisible]="isDeleted" [class.fade-in]="!isDeleted" class="task">
+    <input type="checkbox" (change)="handleCheckboxChange()" [checked]="task.completed"/>
+    <p [class.checked]="task.completed">{{ task.content }}</p>
+    <img class="deleteButton" src="assets/cross.png" (click)="handleDelete()" />
+</div>
