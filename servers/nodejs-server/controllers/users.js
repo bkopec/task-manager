@@ -6,15 +6,7 @@ const jwt = require('jsonwebtoken')
 
 const config = require('../utils/config')
 
-let Database;
-if (config.DATABASE_ENGINE == "MYSQL")
-  Database = require('../database/mysql_database');
-else if (config.DATABASE_ENGINE == "MONGODB")
-  Database = require('../database/mongodb_database');
-else if (config.DATABASE_ENGINE == "PGSQL")
-  Database = require('../database/pgsql_database');
-else if (config.DATABASE_ENGINE == "MSSQL")
-  Database = require('../database/mssql_database');
+Database = require('../utils/database.js');
 
 
 function generateToken(userForToken) {

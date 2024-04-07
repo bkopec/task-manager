@@ -3,6 +3,7 @@ import './App.css';
 import { useState } from "react";
 import axios from 'axios'
 import Cookies from 'universal-cookie';
+import config from './config.js';
 
 import {
   BrowserRouter as Router,
@@ -17,7 +18,7 @@ import {
 //axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 
 
-const backendUrl = "http://localhost:3001";
+const backendUrl = config.backendUrl
 
 import HomePage from './pages/HomePage';
 import AuthPage from './pages/AuthPage';

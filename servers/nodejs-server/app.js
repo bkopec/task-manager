@@ -9,15 +9,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-let Database;
-if (config.DATABASE_ENGINE == "MYSQL")
-  Database = require('./database/mysql_database');
-else if (config.DATABASE_ENGINE == "MONGODB")
-  Database = require('./database/mongodb_database');
-else if (config.DATABASE_ENGINE == "PGSQL")
-  Database = require('./database/pgsql_database');
-else if (config.DATABASE_ENGINE == "MSSQL")
-  Database = require('./database/mssql_database');
+Database = require('./utils/database.js');
 Database.init();
 
 const middleware = require('./utils/middleware')
@@ -31,7 +23,7 @@ app.use('/api/users', usersRouter)
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
 
-const PORT = 3001
+const PORT = config.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 })

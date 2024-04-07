@@ -4,50 +4,22 @@ const jwt = require('jsonwebtoken')
 
 const config = require('../utils/config')
 
-let Database;
-if (config.DATABASE_ENGINE == "MYSQL")
-  Database = require('../database/mysql_database');
-else if (config.DATABASE_ENGINE == "MONGODB")
-  Database = require('../database/mongodb_database');
-else if (config.DATABASE_ENGINE == "PGSQL")
-  Database = require('../database/pgsql_database');
-else if (config.DATABASE_ENGINE == "MSSQL")
-  Database = require('../database/mssql_database');
+const { authenticateUser, checkTaskOwnership} = require('../utils/middleware');
 
 
-const getTokenFrom = request => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.startsWith('Bearer ')) {
-    return authorization.replace('Bearer ', '')
-  }
-  return null
-}
+Database = require('../utils/database.js');
 
-tasksRouter.get('/', async (request, response) => {
+tasksRouter.get('/', authenticateUser, async (request, response) => {
 
-    const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
-    if (!decodedToken.id)
-      return response.status(401).json({ error: 'token invalid' })
-  
-    const user = await Database.findUserById(decodedToken.id)
-    if (!user) {
-      return response.status(401).json({ error: 'token invalid or user deleted' });
-    }
+  const user = request.user;
      
     const tasks = await Database.findTasksByLogin(user.login);
     response.send({...tasks});
 })
   
-tasksRouter.post('/', async (request, response) => {
+tasksRouter.post('/', authenticateUser, async (request, response) => {
   
-    const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
-    if (!decodedToken.id) {
-      return response.status(401).json({ error: 'token invalid' })
-    }
-    const user = await Database.findUserById(decodedToken.id)
-    if (!user) {
-      return response.status(401).json({ error: 'token invalid or user deleted' })
-    }
+  const user = request.user;
 
     Database.createTask({...request.body, login: user.login})
     .then(result => {
@@ -59,17 +31,9 @@ tasksRouter.post('/', async (request, response) => {
     });
 })
   
-tasksRouter.delete('/:taskId', async (request, response) => {
+tasksRouter.delete('/:taskId', authenticateUser, checkTaskOwnership, async (request, response) => {
   
     const taskId = request.params.taskId;
-  
-    const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
-    if (!decodedToken.id)
-      return response.status(401).json({ error: 'token invalid' })
-  
-    const user = await Database.findUserById(decodedToken.id)
-    if (!user)
-      return response.status(401).json({ error: 'token invalid or user deleted' })
 
       Database.deleteTaskById(taskId)
   .then(result => {
@@ -81,15 +45,7 @@ tasksRouter.delete('/:taskId', async (request, response) => {
 })
   
   
-tasksRouter.put('/:taskId', async (request, response) => {
-
-    const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
-    if (!decodedToken.id)
-      return response.status(401).json({ error: 'token invalid' })
-  
-    const user = await Database.findUserById(decodedToken.id)
-    if (!user)
-      return response.status(401).json({ error: 'token invalid or user deleted' })
+tasksRouter.put('/:taskId', authenticateUser, checkTaskOwnership, async (request, response) => {
 
     Database.updateTaskCompletion(request.body.id)
     .then(result => {
