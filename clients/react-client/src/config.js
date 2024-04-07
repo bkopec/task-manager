@@ -1,5 +1,5 @@
 const config = {
-    backendUrl: 'http://localhost:3001'
+    backendUrl: 'https://taskmanager.bkopec.com'
 };
 
 export default config;
